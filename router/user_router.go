@@ -46,7 +46,7 @@ func Create(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 	var user User
 	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
-		respondWithError(w, http.StatusBadRequest, "sInvalid request payload")
+		respondWithError(w, http.StatusBadRequest, "Invalid request payload")
 		return
 	}
 	user.ID = bson.NewObjectId()
