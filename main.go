@@ -16,7 +16,7 @@ var config = Config{}
 
 const userPath = "/api/users"
 const userPathId = userPath + "/{id}"
-const port = ":3000"
+const port = ":3001"
 
 func init() {
 	config.Read()
@@ -31,8 +31,13 @@ func main() {
 	handleUserRouter(router)
 	handleFileUploadRouter(router)
 
+	allowedHeaders := handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type"})
+	allowedOrigins := handlers.AllowedOrigins([]string{"*"})
+	allowedMethods := handlers.AllowedMethods([]string{"GET", "HEAD", "POST", "PUT", "DELETE", "OPTIONS"})
+
+
 	fmt.Println("Server running in port:", port)
-	log.Fatal(http.ListenAndServe(port, handlers.CORS()(router)))
+	log.Fatal(http.ListenAndServe(port, handlers.CORS(allowedHeaders, allowedOrigins, allowedMethods)(router)))
 }
 
 func handleUserRouter(router *mux.Router) {
