@@ -69,7 +69,7 @@ func Update(w http.ResponseWriter, r *http.Request) {
 		respondWithError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
-	respondWithJson(w, http.StatusOK, map[string]string{"result": user.Name + " updated successfully"})
+	respondWithJson(w, http.StatusOK, user)
 }
 
 func Delete(w http.ResponseWriter, r *http.Request) {
