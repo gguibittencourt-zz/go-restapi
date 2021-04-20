@@ -9,6 +9,8 @@ import (
 type Config struct {
 	Database string
 	Server   string
+	Username string
+	Password string
 }
 
 func (config *Config) Read() {

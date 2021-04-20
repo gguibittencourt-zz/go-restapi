@@ -1,2 +1,3 @@
-server="localhost"
-database="users_db"
+server="localhost:3306"
+database="example"
+username="root"
