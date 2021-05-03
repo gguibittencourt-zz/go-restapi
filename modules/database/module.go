@@ -27,11 +27,11 @@ func New(p Params) (*gorm.DB, error) {
 		return nil, err
 	}
 	p.Logger.Info("Connected to database")
-	_ = db.AutoMigrate(&models.User{})
+	_ = db.AutoMigrate(&models.Task{})
 	return db, nil
 }
 
 func connectDB(config *Config) (*gorm.DB, error) {
-	dbSource := fmt.Sprintf("%s@tcp(%s)/%s?charset=utf8&parseTime=true&loc=Local", config.Username, config.Server, config.Database)
+	dbSource := fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8&parseTime=true&loc=Local", config.Username, config.Password, config.Server, config.Database)
 	return gorm.Open(mysql.Open(dbSource), &gorm.Config{})
 }

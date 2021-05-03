@@ -1,3 +1,4 @@
 server="localhost:3306"
 database="example"
 username="root"
+password="12345678"

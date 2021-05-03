@@ -1,4 +1,4 @@
-package users
+package tasks
 
 import (
 	"encoding/json"
@@ -43,14 +43,14 @@ func New(p Params) Handler {
 }
 
 func (h *handler) List(writer http.ResponseWriter, request *http.Request) {
-	var users []models.User
-	err := models.ListUsers(h.db, &users)
+	var tasks []models.Task
+	err := models.ListTasks(h.db, &tasks)
 	if err != nil {
 		render.Status(request, http.StatusInternalServerError)
 		render.JSON(writer, request, map[string]string{"message": err.Error()})
 		return
 	}
-	render.JSON(writer, request, users)
+	render.JSON(writer, request, tasks)
 }
 
 func (h *handler) Find(writer http.ResponseWriter, request *http.Request) {
@@ -61,32 +61,32 @@ func (h *handler) Find(writer http.ResponseWriter, request *http.Request) {
 		render.JSON(writer, request, map[string]string{"message": "Id not found"})
 		return
 	}
-	var user models.User
-	err = models.GetUser(h.db, &user, id)
+	var task models.Task
+	err = models.GetTask(h.db, &task, id)
 	if err != nil {
 		render.Status(request, http.StatusNotFound)
-		render.JSON(writer, request, map[string]string{"message": "User not found"})
+		render.JSON(writer, request, map[string]string{"message": "Task not found"})
 		return
 	}
-	render.JSON(writer, request, user)
+	render.JSON(writer, request, task)
 }
 
 func (h *handler) Create(writer http.ResponseWriter, request *http.Request) {
-	var user models.User
-	body, _ := request.GetBody()
-	err := json.NewDecoder(body).Decode(&user)
+	var task models.Task
+	body := request.Body
+	err := json.NewDecoder(body).Decode(&task)
 	if err != nil {
 		render.Status(request, http.StatusBadRequest)
 		render.JSON(writer, request, map[string]string{"message": "Incorrect body: " + err.Error()})
 		return
 	}
-	err = models.CreateUser(h.db, &user)
+	err = models.CreateTask(h.db, &task)
 	if err != nil {
 		render.Status(request, http.StatusBadRequest)
-		render.JSON(writer, request, map[string]string{"message": "Error on create user: " + err.Error()})
+		render.JSON(writer, request, map[string]string{"message": "Error on create Task: " + err.Error()})
 		return
 	}
-	render.JSON(writer, request, user)
+	render.JSON(writer, request, task)
 }
 
 func (h *handler) Update(writer http.ResponseWriter, request *http.Request) {
