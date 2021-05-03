@@ -1,10 +1,11 @@
 package users
 
 import (
+	"encoding/json"
 	"github.com/gguibittencourt/go-restapi/models"
 	"github.com/go-chi/chi"
 	"github.com/go-chi/render"
-	"github.com/jinzhu/gorm"
+	"gorm.io/gorm"
 	"net/http"
 	"strconv"
 
@@ -34,16 +35,21 @@ type handler struct {
 	db     *gorm.DB
 }
 
-func New(p Params) (Handler, error) {
+func New(p Params) Handler {
 	return &handler{
 		logger: p.Logger,
 		db:     p.DB,
-	}, nil
+	}
 }
 
 func (h *handler) List(writer http.ResponseWriter, request *http.Request) {
 	var users []models.User
-	h.db.Find(&users)
+	err := models.ListUsers(h.db, &users)
+	if err != nil {
+		render.Status(request, http.StatusInternalServerError)
+		render.JSON(writer, request, map[string]string{"message": err.Error()})
+		return
+	}
 	render.JSON(writer, request, users)
 }
 
@@ -56,8 +62,8 @@ func (h *handler) Find(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 	var user models.User
-	h.db.Where("id = ?", id).First(&user)
-	if user.Id == 0 {
+	err = models.GetUser(h.db, &user, id)
+	if err != nil {
 		render.Status(request, http.StatusNotFound)
 		render.JSON(writer, request, map[string]string{"message": "User not found"})
 		return
@@ -66,7 +72,21 @@ func (h *handler) Find(writer http.ResponseWriter, request *http.Request) {
 }
 
 func (h *handler) Create(writer http.ResponseWriter, request *http.Request) {
-	panic("implement me")
+	var user models.User
+	body, _ := request.GetBody()
+	err := json.NewDecoder(body).Decode(&user)
+	if err != nil {
+		render.Status(request, http.StatusBadRequest)
+		render.JSON(writer, request, map[string]string{"message": "Incorrect body: " + err.Error()})
+		return
+	}
+	err = models.CreateUser(h.db, &user)
+	if err != nil {
+		render.Status(request, http.StatusBadRequest)
+		render.JSON(writer, request, map[string]string{"message": "Error on create user: " + err.Error()})
+		return
+	}
+	render.JSON(writer, request, user)
 }
 
 func (h *handler) Update(writer http.ResponseWriter, request *http.Request) {
@@ -76,14 +96,3 @@ func (h *handler) Update(writer http.ResponseWriter, request *http.Request) {
 func (h *handler) Delete(writer http.ResponseWriter, request *http.Request) {
 	panic("implement me")
 }
-
-type ErrResponse struct {
-	Err            error `json:"-"` // low-level runtime error
-	HTTPStatusCode int   `json:"-"` // http response status code
-
-	StatusText string `json:"status"`          // user-level status message
-	AppCode    int64  `json:"code,omitempty"`  // application-specific error code
-	ErrorText  string `json:"error,omitempty"` // application-level error message, for debugging
-}
-
-var ErrNotFound = &ErrResponse{HTTPStatusCode: 404, StatusText: "Resource not found."}

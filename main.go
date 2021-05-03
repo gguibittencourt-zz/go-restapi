@@ -14,9 +14,9 @@ func main() {
 
 func opts() fx.Option {
 	return fx.Options(
-		handler.Module,
 		loggerfx.Module,
 		database.Module,
+		handler.Module,
 		fx.Invoke(routes.Register),
 	)
 }
